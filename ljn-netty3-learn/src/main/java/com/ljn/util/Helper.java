@@ -1,9 +1,8 @@
 package com.ljn.util;
 
-import java.nio.charset.Charset;
-
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.util.CharsetUtil;
 
 /**
  * @author lijinnan
@@ -11,7 +10,11 @@ import org.jboss.netty.buffer.ChannelBuffers;
  */
 public class Helper {
 
-    public static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
+    private Helper() {
+        throw new IllegalStateException();
+    }
+    
+    
     public static void main(String[] args) {
         int i = 1;
         ChannelBuffer buff = ChannelBuffers.buffer(4);
@@ -22,7 +25,7 @@ public class Helper {
     }
     
     public static String toString(ChannelBuffer buff) {
-        return buff.toString(CHARSET_UTF8);
+        return buff.toString(CharsetUtil.UTF_8);
     }
     
     public static void printAsBytesWithoutChange(ChannelBuffer buff) {
