@@ -17,7 +17,7 @@ local.properties
 .loadpath
 
 #bylijinnan
-ljn-netty3-learn/src/test/
+**/src/test/
 *.class
 
 # External tool builders
