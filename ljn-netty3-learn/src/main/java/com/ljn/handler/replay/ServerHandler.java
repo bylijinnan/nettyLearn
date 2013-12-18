@@ -15,7 +15,7 @@ public class ServerHandler extends SimpleChannelUpstreamHandler {
             throws Exception {
         Message msg = (Message) e.getMessage();
         System.out.println("server messageReceived:" + msg);
-        
+
         /*
          正确的输出：
          server messageReceived:Message [type=1000, id=A0001, params=[a, bb, ccc]]
