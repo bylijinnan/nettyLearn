@@ -15,10 +15,10 @@ http://jeewanthad.blogspot.com/2013/02/reactor-pattern-explained-part-1.html
 http://gee.cs.oswego.edu/dl/cpjslides/nio.pdf
 
 单线程的实现
-Recator用一个线程（在main方法里面start）来响应所有Client的请求：
-1.accept时创建对应的handler（称为handlerA），并将handler的interestOps初始为READ
-2.当读事件ready，handlerA被选中（dispatch），并执行它的run方法
-因此，每accept就创建一个handler（也就是为每一个Client设置一个handler），但都在同一线程里面处理
+Server端用一个Selector利用一个线程（在main方法里面start）来响应所有请求
+1.当ACCEPT事件就绪，Acceptor被选中，执行它的run方法：创建一个Handler（例如为handlerA），并将Handler的interestOps初始为READ
+2.当READ事件就绪，handlerA被选中，执行它的run方法：它根据自身的当前状态，来执行读或写操作
+因此，每一个Client连接过来，Server就创建一个Handler，但都所有操作都在一个线程里面
 
 Selection Key   Channel                 Handler     Interested Operation
 ------------------------------------------------------------------------
@@ -48,9 +48,9 @@ public class Reactor implements Runnable {
     final boolean isWithThreadPool;
  
     /*Reactor的主要工作：
-     * 1.维护一个acceptor，接收请求
-     * 2.把请求分发给handler
-     * 要注意其实acceptor也是一个handler（只是与它关联的channel是ServerSocketChannel而不是SocketChannel）
+     * 1.给ServerSocketChannel设置一个Acceptor，接收请求
+     * 2.给每一个一个SocketChannel（代表一个Client）关联一个Handler
+     * 要注意其实Acceptor也是一个Handler（只是与它关联的channel是ServerSocketChannel而不是SocketChannel）
      */
     Reactor(int port, boolean isWithThreadPool) throws IOException {
  
@@ -86,7 +86,7 @@ public class Reactor implements Runnable {
         }
     }
     
-    //handler作为SellectionKey的attachment。这样，handler就与SelectionKey也就是interestOps对应起来了
+    //从SelectionKey中取出Handler并执行Handler的run方法，没有创建新线程
     void dispatch(SelectionKey k) {
         Runnable r = (Runnable) (k.attachment());
         if (r != null) {
@@ -94,7 +94,7 @@ public class Reactor implements Runnable {
         } 
     }
     
-    //主要工作是为每一个连接成功后返回的SocketChannel关联一个handler
+    //主要工作是为每一个连接成功后返回的SocketChannel关联一个Handler，详见Handler的构造函数
     class Acceptor implements Runnable {
         public void run() {
             try {

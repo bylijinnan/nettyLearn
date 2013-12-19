@@ -12,6 +12,8 @@ public class Handler implements Runnable {
     final SelectionKey selectionKey;
     ByteBuffer input = ByteBuffer.allocate(1024);
     static final int READING = 0, SENDING = 1;
+    
+    //初始状态
     int state = READING;
     String clientName = "";
  
@@ -20,6 +22,11 @@ public class Handler implements Runnable {
         socketChannel = c;
         c.configureBlocking(false);
         selectionKey = socketChannel.register(selector, 0);
+        
+        /*
+        handler作为SellectionKey的attachment。这样，handler就与SelectionKey也就是interestOps对应起来了
+        反过来说，当interestOps发生、SelectionKey被选中时，就能从SelectionKey中取得handler
+        */
         selectionKey.attach(this);
         selectionKey.interestOps(SelectionKey.OP_READ);
         selector.wakeup();
@@ -50,7 +57,7 @@ public class Handler implements Runnable {
  
     /**
      * Processing of the read message. This only prints the message to stdOut.
-     * 将Client发过来的信息（clientName）转成字符串形式
+     * 非IO操作（业务逻辑，实际应用中可能会非常耗时）：将Client发过来的信息（clientName）转成字符串形式
      * @param readCount
      */
     synchronized void readProcess(int readCount) {
