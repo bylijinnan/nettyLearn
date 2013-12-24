@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
@@ -16,7 +18,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
  * 
  * 例如运行时：java HexDumpProxy 8888 127.0.0.1 8080
  * 然后在浏览器中输入：
- * 127.0.0.1:8888
+ * http://127.0.0.1:8888
  * 则浏览器会重定向到127.0.0.1 8080（需要在127.0.0.1 8080运行一个tomcat或其他web服务器）
  * 同时，在HexDumpProxy会打印客户端和真实服务器传递的数据（hex形式）
  * @author lijinnan
@@ -41,14 +43,29 @@ public class HexDumpProxy {
                 remoteHost + ':' + remotePort + " ...");
         // Configure the bootstrap.
         Executor executor = Executors.newCachedThreadPool();
-        ServerBootstrap sb = new ServerBootstrap(
+        ServerBootstrap serverBootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(executor, executor));
-        // Set up the event pipeline factory.
-        ClientSocketChannelFactory factory =
+        
+        ClientSocketChannelFactory clientFactory =
                 new NioClientSocketChannelFactory(executor, executor);
-        sb.setPipelineFactory(
-                new HexDumpProxyPipelineFactory(factory, remoteHost, remotePort));
+        
+        /*粗看之下，有些奇怪：为ServerBootstrap设置的是ClientSocketChannelFactory，
+        其实好理解，因为对于真实服务器来说，HexDumpProxy是Client
+        查看API可知，setPipelineFactory后，上面通过构造函数传入的Factory就被“冻结”了
+        调用getPipeline会抛出异常
+        也就是说，构造函数里面的Factory（Server）只负责bind和accept，而不能有Handler
+        */
+        serverBootstrap.setPipelineFactory(
+                new HexDumpProxyPipelineFactory(clientFactory, remoteHost, remotePort));
+        
+        Channel c = serverBootstrap.getFactory().newChannel(Channels.pipeline());
+        System.out.println("channel===" + c.getClass()); //NioServerSocketChannel
+        /*
+         java.lang.IllegalStateException: getPipeline() cannot be called if setPipelineFactory() was called
+         */
+        //serverBootstrap.getPipeline();
+        
         // Start up the server.
-        sb.bind(new InetSocketAddress(localPort));
+        serverBootstrap.bind(new InetSocketAddress(localPort));
     }
 }

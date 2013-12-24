@@ -1,7 +1,12 @@
 package com.ljn.util;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.ChannelHandler;
+import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.util.CharsetUtil;
 
 /**
@@ -34,4 +39,21 @@ public class Helper {
         }
         System.out.println();
     }
+    
+    public static void print(ChannelPipeline pipeline) {
+        if (pipeline == null) {
+            throw new NullPointerException();
+        }
+        Map<String, ChannelHandler> map = pipeline.toMap();
+        if (map.isEmpty()) {
+            System.out.println("pipeline is empty");
+            return;
+        }
+        for (Entry<String, ChannelHandler> item : map.entrySet()) {
+            String name = item.getKey();
+            ChannelHandler handler = item.getValue();
+            System.out.println(name + ":" + handler);
+        }
+    }
+    
 }

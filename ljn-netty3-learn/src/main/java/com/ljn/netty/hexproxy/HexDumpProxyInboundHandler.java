@@ -9,11 +9,14 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
+
+import com.ljn.util.Helper;
 
 /**
  * @author lijinnan
@@ -26,6 +29,7 @@ public class HexDumpProxyInboundHandler extends SimpleChannelUpstreamHandler  {
     private int remotePort;
     
     //????为什么要用volatile
+    //因为当有多个Client时，会有多个线程访问outboundChannel，需要同步
     private volatile Channel outboundChannel;
     
     public HexDumpProxyInboundHandler(ClientSocketChannelFactory factory,
@@ -35,9 +39,15 @@ public class HexDumpProxyInboundHandler extends SimpleChannelUpstreamHandler  {
         this.remotePort = remotePort;
     }
     
+    /*
+     Client连接代理成功，准备发起请求之前，代理服务器要建立到真实服务器的Channel
+     */
     @Override
     public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
             throws Exception {
+        ChannelPipeline pipeline = ctx.getPipeline();
+        Helper.print(pipeline);
+        
         System.out.println("channelOpen");
         final Channel inboundChannel = e.getChannel();
             
@@ -62,7 +72,7 @@ public class HexDumpProxyInboundHandler extends SimpleChannelUpstreamHandler  {
         });
     }
     
-    //这个代理会把接收到的信息转发给真实服务器，为了做到这一点，需要建立一个连接到真实
+    //把接收到的Client的信息转发给真实服务器。为了做到这一点，需要建立一个连接到真实
     //服务器的Channel（也就是上面代码的“outboundChannel”）并往里面写数据
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
@@ -87,8 +97,10 @@ public class HexDumpProxyInboundHandler extends SimpleChannelUpstreamHandler  {
         closeOnFlush(e.getChannel());
     }
     
-    //===================================
-    
+
+    /**
+     * 把接收到的真实服务器的消息，回写给Client
+     */
     private static class OutboundHandler extends SimpleChannelUpstreamHandler {
         private Channel inboundChannel;
 
