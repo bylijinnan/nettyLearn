@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	version="3.0">
+	<servlet>
+		<servlet-name>NettyTunnelingServlet</servlet-name>
+		<!-- 为方便调试，我把Netty的HttpTunnelingServlet拷贝到工程的src目录下
+		实际应用中，直接使用就可以了：
+		 -->
+		 <!-- 
+		 <servlet-class>org.jboss.netty.channel.socket.http.HttpTunnelingServlet</servlet-class>
+		 -->
+		<servlet-class>com.ljn.netty3.tunnelserver.HttpTunnelingServlet</servlet-class>
+		
+		
+		<!-- 
+		The name of the channel, this should be a registered local channel. See LocalTransportRegister. 
+		为了与HttpTunnelingServlet配合，还要求必须以“local:”开头
+		-->
+		<init-param>
+			<param-name>endpoint</param-name>
+			<param-value>local:myLocalServer</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>NettyTunnelingServlet</servlet-name>
+		<url-pattern>/netty-tunnel</url-pattern>
+	</servlet-mapping>
+
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+</web-app>

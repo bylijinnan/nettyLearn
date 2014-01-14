@@ -19,7 +19,7 @@ local.properties
 #bylijinnan
 **/src/test/
 **/src/main/java/org/jboss/netty
-**/target/classes
+**/target/
 *.class
 
 # External tool builders

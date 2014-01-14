@@ -6,13 +6,11 @@
   
   <dependencies>
   
-    <!-- 直接入源文件
     <dependency>
         <groupId>io.netty</groupId>
 		<artifactId>netty</artifactId>
 		<version>3.5.2.Final</version>
     </dependency>
-     -->
      
     <dependency>
 	    <groupId>org.apache.commons</groupId>
@@ -24,7 +22,12 @@
 		<artifactId>commons-io</artifactId>
 		<version>2.4</version>
 	</dependency>
-            
+    
+     <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>2.1.0</version>
+      </dependency>
             
   </dependencies>
   

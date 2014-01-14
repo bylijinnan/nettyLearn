@@ -19,6 +19,7 @@ public class ClientHandler extends SimpleChannelUpstreamHandler {
         ChannelBuffer buff = formBuffer();
         e.getChannel().write(buff);
         System.out.println("in channelConnected: write ok");
+        
     }
 
     private ChannelBuffer formBuffer() {
